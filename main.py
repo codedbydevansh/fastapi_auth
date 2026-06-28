@@ -27,6 +27,12 @@ Base.metadata.create_all(bind=engine)
 def get_user_by_email(email: str, db: Session):
     return db.query(User).filter(User.email == email.lower().strip()).first()
 
+
+@app.get("/")
+def root():
+    return {"status": "TaskMaster Pro API is Running", "docs": "/docs"}
+
+
 @app.post("/request-otp")
 async def request_otp(data: OTPRequest, db: Session = Depends(get_db)):
     email_clean = data.email.lower().strip()
