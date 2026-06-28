@@ -28,27 +28,20 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Get the database URL from environment variables
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Robust URL handling for Pylance
+raw_url = os.getenv("DATABASE_URL", "sqlite:///./local.db")
+if raw_url.startswith("postgres://"):
+    raw_url = raw_url.replace("postgres://", "postgresql://", 1)
 
-# --- FIX FOR RENDER/HEROKU POSTGRES ---
-# SQLAlchemy 1.4+ requires "postgresql://" but Render provides "postgres://"
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+DATABASE_URL: str = raw_url # Force string type
 
-# --- CREATE ENGINE ---
-# Check if we are using SQLite or PostgreSQL
-if DATABASE_URL and DATABASE_URL.startswith("sqlite"):
-    # SQLite needs "check_same_thread" set to False for FastAPI
+if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
-    # PostgreSQL engine
     engine = create_engine(DATABASE_URL)
 
-# Configure Session and Base
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

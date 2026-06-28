@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime, timedelta
+from typing import cast
 
 from schema import LoginUser, TodoCreate, TodoResponse, OTPRequest, RegisterWithOTP
 from database import engine, get_db, Base
@@ -33,6 +34,45 @@ def root():
     return {"status": "TaskMaster Pro API is Running", "docs": "/docs"}
 
 
+@app.post("/register")
+def register_with_otp(user: RegisterWithOTP, db: Session = Depends(get_db)):
+    email_clean = user.email.lower().strip()
+    
+    # Query for OTP
+    otp_record = db.query(PendingOTP).filter(
+        PendingOTP.email == email_clean, 
+        PendingOTP.code == user.otp_code
+    ).first()
+    
+    if not otp_record:
+        raise HTTPException(400, "Invalid OTP")
+    
+    # Use cast to help Pylance understand this is a model instance, not a Column
+    record = cast(PendingOTP, otp_record)
+    
+    # Check expiry (10 minutes)
+    if datetime.utcnow() - record.created_at > timedelta(minutes=10):
+        db.delete(record)
+        db.commit()
+        raise HTTPException(400, "OTP Expired")
+
+    # Create User
+    new_user = User(
+        username=user.username.strip(),
+        email=email_clean,
+        password=hash_password(user.password),
+        is_verified=True
+    )
+    
+    try:
+        db.add(new_user)
+        db.delete(record) # Remove OTP after use
+        db.commit()
+        return {"message": "User Created"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(500, "Database error during registration")
+
 @app.post("/request-otp")
 async def request_otp(data: OTPRequest, db: Session = Depends(get_db)):
     email_clean = data.email.lower().strip()
@@ -53,30 +93,6 @@ async def request_otp(data: OTPRequest, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(500, f"Mail Error: {str(e)}")
-
-@app.post("/register")
-def register_with_otp(user: RegisterWithOTP, db: Session = Depends(get_db)):
-    email_clean = user.email.lower().strip()
-    otp_record = db.query(PendingOTP).filter(PendingOTP.email == email_clean, PendingOTP.code == user.otp_code).first()
-    
-    if not otp_record:
-        raise HTTPException(400, "Invalid OTP")
-    
-    if datetime.utcnow() - otp_record.created_at > timedelta(minutes=10):
-        db.delete(otp_record)
-        db.commit()
-        raise HTTPException(400, "OTP Expired")
-
-    new_user = User(
-        username=user.username.strip(),
-        email=email_clean,
-        password=hash_password(user.password),
-        is_verified=True
-    )
-    db.add(new_user)
-    db.delete(otp_record)
-    db.commit()
-    return {"message": "User Created"}
 
 @app.post("/login")
 def login(user: LoginUser, db: Session = Depends(get_db)):
