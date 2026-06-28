@@ -15,7 +15,7 @@ conf = ConnectionConfig(
     MAIL_STARTTLS = False, # For Port 587
     MAIL_SSL_TLS = True, # For Port 587
     USE_CREDENTIALS = True,
-    VALIDATE_CERTS = True
+    VALIDATE_CERTS = True,
     TIMEOUT = 60
 )
 
