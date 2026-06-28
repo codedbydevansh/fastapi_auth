@@ -88,8 +88,15 @@ if "reg_email" not in st.session_state: st.session_state.reg_email = ""
 def api_request_otp(email):
     try:
         res = requests.post(f"{BASE_URL}/request-otp", json={"email": email})
-        return res.status_code == 200
-    except: return False
+        if res.status_code == 200:
+            return True, "Success"
+        else:
+            # Get the error message from the backend
+            error_detail = res.json().get('detail', 'Unknown Error')
+            return False, error_detail
+    except Exception as e:
+        return False, str(e)
+
 
 def api_register(username, email, password, otp):
     try:
@@ -150,14 +157,15 @@ if choice == "Register":
         with st.container():
             email_input = st.text_input("Enter your Gmail Address", placeholder="name@gmail.com")
             if st.button("Send Verification Code", type="primary"):
-                if api_request_otp(email_input):
+                success, message = api_request_otp(email_input) # Updated
+                if success:
                     st.session_state.otp_sent = True
                     st.session_state.reg_email = email_input
                     st.success("Verification code sent to your Gmail!")
                     time.sleep(1)
                     st.rerun()
                 else:
-                    st.error("Failed to send OTP. Is the email already registered?")
+                    st.error(f"Error: {message}")
     else:
         st.info(f"📧 Verification code sent to: **{st.session_state.reg_email}**")
         with st.form("reg_form"):
