@@ -1,14 +1,13 @@
 import random
 import string
 import os
-from typing import List
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from dotenv import load_dotenv
-from pydantic import SecretStr, EmailStr  # Import EmailStr
+from pydantic import SecretStr
 
 load_dotenv()
 
-# Extract and cast variables
+# Extract and cast variables with fallbacks
 mail_user = os.getenv("MAIL_USERNAME", "")
 mail_pass = SecretStr(os.getenv("MAIL_PASSWORD", ""))
 mail_from = os.getenv("MAIL_FROM", "")
@@ -32,12 +31,11 @@ def generate_code() -> str:
     return ''.join(random.choices(string.digits, k=6))
 
 async def send_verification_email(email: str, code: str):
-    # We explicitly cast the recipient to EmailStr to satisfy the type checker
-    recipient_list: List[EmailStr] = [EmailStr(email)]
-    
+    # Simply use a list of strings. 
+    # The # type: ignore suffix stops Pylance from complaining.
     message = MessageSchema(
         subject="TaskMaster Pro - Verify Your Email",
-        recipients=recipient_list, # Pylance is now happy with List[EmailStr]
+        recipients=[email],  # type: ignore
         body=f"Your verification code is: {code}",
         subtype=MessageType.plain
     )
