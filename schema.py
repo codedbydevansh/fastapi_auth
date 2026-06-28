@@ -30,3 +30,16 @@ class TodoResponse(TodoBase):
 
     class Config:
         from_attributes = True
+
+class VerifyEmail(BaseModel):
+    email: EmailStr
+    code: str
+
+class OTPRequest(BaseModel):
+    email: EmailStr
+
+class RegisterWithOTP(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+    otp_code: str

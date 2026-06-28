@@ -4,9 +4,9 @@ sqlalchemy
 pydantic
 pydantic[email]
 python-jose[cryptography]
-passlib[bcrypt]
 bcrypt==3.2.0
 python-multipart
 python-dotenv
 email-validator
 pymysql
+fastapi-mail
