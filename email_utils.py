@@ -12,10 +12,11 @@ conf = ConnectionConfig(
     MAIL_FROM = os.getenv("MAIL_FROM"),
     MAIL_PORT = int(os.getenv("MAIL_PORT", 465)),
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-    MAIL_STARTTLS = True, # For Port 587
-    MAIL_SSL_TLS = False, # For Port 587
+    MAIL_STARTTLS = False, # For Port 587
+    MAIL_SSL_TLS = True, # For Port 587
     USE_CREDENTIALS = True,
     VALIDATE_CERTS = True
+    TIMEOUT = 60
 )
 
 def generate_code():
