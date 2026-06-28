@@ -10,7 +10,17 @@ from jwt_handler import get_current_user, create_access_token
 from auth import hash_password, verify_password
 from email_utils import send_verification_email, generate_code
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace ["*"] with your Streamlit URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 Base.metadata.create_all(bind=engine)
 
