@@ -3,7 +3,9 @@ import requests
 import time
 
 # --- Configuration ---
-BASE_URL = "http://127.0.0.1:8000"
+#BASE_URL = "http://127.0.0.1:8000"
+
+BASE_URL = "https://fastapi-auth-y1nr.onrender.com"
 
 st.set_page_config(
     page_title="TaskMaster Pro | Productivity Dashboard",
