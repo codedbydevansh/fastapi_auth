@@ -1,11 +1,14 @@
 fastapi
-uvicorn
+uvicorn[standard]
 sqlalchemy
+pydantic
+pydantic[email]
 python-jose[cryptography]
 bcrypt==3.2.0
 python-multipart
 python-dotenv
-fastapi-mail
 email-validator
 requests
 streamlit
+fastapi-mail
+psycopg2-binary
