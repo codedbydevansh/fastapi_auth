@@ -7,15 +7,15 @@ import os
 load_dotenv()
 
 conf = ConnectionConfig(
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME"),
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD"),
-    MAIL_FROM = os.getenv("MAIL_FROM"),
-    MAIL_PORT = 587,
-    MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-    MAIL_STARTTLS = True, # For Port 587
-    MAIL_SSL_TLS = False, # For Port 587
+    MAIL_USERNAME = os.getenv(MAIL_USERNAME),
+    MAIL_PASSWORD = os.getenv(MAIL_PASSWORD),
+    MAIL_FROM = os.getenv(MAIL_FROM),
+    MAIL_PORT = 465,              # Port 465 is more stable on Railway
+    MAIL_SERVER = "smtp.gmail.com",
+    MAIL_STARTTLS = False,        # False for 465
+    MAIL_SSL_TLS = True,          # True for 465
     USE_CREDENTIALS = True,
-    VALIDATE_CERTS = False,
+    VALIDATE_CERTS = False,       # This prevents handshake delays on cloud servers
     TIMEOUT = 60
 )
 
@@ -30,4 +30,5 @@ async def send_verification_email(email: str, code: str):
         subtype=MessageType.plain
     )
     fm = FastMail(conf)
+    # We use await here to ensure the connection is established before moving on
     await fm.send_message(message)
